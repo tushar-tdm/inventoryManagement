@@ -7,3 +7,13 @@
 
 # To run on a specific profile:
 ./gradlew bootRun -D spring.profiles.active=prod
+
+# To run prometheus
+prometheus --config.file=/Users/tusharm/Documents/java/inventoryManagement/prometheus.yml
+## Verify by running:
+http://localhost:9090
+
+# To run Grafana:
+brew services start grafana
+## Verify by running:
+http://localhost:3000

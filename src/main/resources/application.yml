@@ -46,6 +46,10 @@ management:
     web:
       exposure:
         include: '*'
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 page:
   size: '10'
 
@@ -87,5 +91,9 @@ management:
     web:
       exposure:
         include: '*'
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 page:
   size: '20'

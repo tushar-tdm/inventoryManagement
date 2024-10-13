@@ -1,7 +1,6 @@
 package com.intuit.inventory.management.controller;
 
 import com.intuit.inventory.management.entity.Product;
-import com.intuit.inventory.management.entity.ProductDetails;
 import com.intuit.inventory.management.exceptions.AddingAnExistingProductException;
 import com.intuit.inventory.management.exceptions.AddingNewVendorWithoutVendorLinkException;
 import com.intuit.inventory.management.exceptions.AddingProductWithoutProductNameOrCategory;
@@ -43,7 +42,6 @@ public class ProductController {
     public ResponseEntity<ProductListResponseDTO> getAllProducts() {
         logger.info("Getting all of the products");
         ProductListResponseDTO products = productService.getAllProducts();
-        logger.info(products.toString());
         return ResponseEntity.ok(products);
     }
 
@@ -52,13 +50,6 @@ public class ProductController {
         logger.info("Getting all of the products in pagination format");
         Pageable pageable = PageRequest.of(pageNo, pageSize);
         ProductListPagedResponseDTO products = productService.getAllProductsPaged(pageable);
-        return ResponseEntity.ok(products);
-    }
-
-    @GetMapping(value = "/vendorId/{vendorId}")
-    public ResponseEntity<ProductListResponseDTO> getAllProductsByVendorId() {
-        logger.info("Getting the products by Vendor id");
-        ProductListResponseDTO products = productService.getAllProducts();
         return ResponseEntity.ok(products);
     }
 
