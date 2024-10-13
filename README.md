@@ -5,4 +5,5 @@
 3. Verify if it's running: 
     lsof -i :26257
 
-
+# To run on a specific profile:
+./gradlew bootRun -D spring.profiles.active=prod
