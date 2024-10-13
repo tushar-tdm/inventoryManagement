@@ -1,0 +1,91 @@
+server:
+  tomcat:
+    relaxed-query-chars: /
+    relaxed-path-chars: /
+  port: '8082'
+
+spring:
+  profiles:
+    active: dev
+
+---
+
+############################################
+#  DEV Configuration
+############################################
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  application:
+    name: inventory.management
+  datasource:
+    password: password
+    driver-class-name: org.postgresql.Driver
+    username: admin
+    url: jdbc:postgresql://localhost:26257/inventory_system
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+green:
+  color:
+    code:
+      min: '50'
+yellow:
+  color:
+    code:
+      min: '20'
+red:
+  color:
+    code:
+      min: '0'
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+page:
+  size: '10'
+
+---
+
+############################################
+#  PROD Configuration
+############################################
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  application:
+    name: inventory.management
+  datasource:
+    password: password
+    driver-class-name: org.postgresql.Driver
+    username: admin
+    url: jdbc:postgresql://localhost:26257/inventory_system
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+green:
+  color:
+    code:
+      min: '150'
+yellow:
+  color:
+    code:
+      min: '50'
+red:
+  color:
+    code:
+      min: '0'
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+page:
+  size: '20'
