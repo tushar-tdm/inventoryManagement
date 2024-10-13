@@ -1,6 +1,7 @@
 package com.intuit.inventory.management.service;
 
 import com.intuit.inventory.management.models.product.ProductInformationDTO;
+import com.intuit.inventory.management.models.product.ProductListPagedResponseDTO;
 import com.intuit.inventory.management.models.product.ProductListResponseDTO;
 import com.intuit.inventory.management.repository.ProductRepository;
 import com.intuit.inventory.management.strategy.implementation.ProductFetchStrategy;
@@ -73,12 +74,9 @@ public class ProductServiceTest {
 
         when(fetchStrategy.fetchPaged(any(Pageable.class))).thenReturn(products);
 
-        // Act
-        ProductListResponseDTO response = productService.getAllProductsPaged(Pageable.unpaged());
-        System.out.println(response);
+        ProductListPagedResponseDTO response = productService.getAllProductsPaged(Pageable.unpaged());
 
-        // Assert
-
+        // Assertions
         assertNotNull(response);
         assertEquals(2, response.getProducts().size());
 

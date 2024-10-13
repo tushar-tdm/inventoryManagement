@@ -51,6 +51,9 @@ public class ProductService {
     @Value("${green.color.code.min}")
     private Integer greenColorCodeMin;
 
+    @Value("${page.size}")
+    private Integer pageSize;
+
     Logger logger = LoggerFactory.getLogger(ProductService.class);
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -69,13 +72,14 @@ public class ProductService {
         );
     }
 
-    public ProductListResponseDTO getAllProductsPaged(Pageable pageable) {
+    public ProductListPagedResponseDTO getAllProductsPaged(Pageable pageable) {
         List<ProductInformationDTO> productInformationDTOList = fetchStrategy.fetchPaged(pageable);
 
-        return new ProductListResponseDTO(
+        return new ProductListPagedResponseDTO(
                 redColorCodeMin,
                 yellowColorCodeMin,
                 greenColorCodeMin,
+                pageSize,
                 productInformationDTOList
         );
     }

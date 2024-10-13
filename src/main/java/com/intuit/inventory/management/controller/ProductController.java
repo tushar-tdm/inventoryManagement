@@ -6,10 +6,7 @@ import com.intuit.inventory.management.exceptions.AddingAnExistingProductExcepti
 import com.intuit.inventory.management.exceptions.AddingNewVendorWithoutVendorLinkException;
 import com.intuit.inventory.management.exceptions.AddingProductWithoutProductNameOrCategory;
 import com.intuit.inventory.management.exceptions.ProductNotFoundException;
-import com.intuit.inventory.management.models.product.ProductCreateRequestDTO;
-import com.intuit.inventory.management.models.product.ProductQuantityUpdateDTO;
-import com.intuit.inventory.management.models.product.ProductListResponseDTO;
-import com.intuit.inventory.management.models.product.ProductUpdateRequestDTO;
+import com.intuit.inventory.management.models.product.*;
 import com.intuit.inventory.management.service.NotificationService;
 import com.intuit.inventory.management.service.ProductService;
 import jakarta.validation.Valid;
@@ -51,10 +48,10 @@ public class ProductController {
     }
 
     @GetMapping(value = "/list/page/{pageNo}")
-    public ResponseEntity<ProductListResponseDTO> getAllProductsPaged(@PathVariable Integer pageNo) {
+    public ResponseEntity<ProductListPagedResponseDTO> getAllProductsPaged(@PathVariable Integer pageNo) {
         logger.info("Getting all of the products in pagination format");
         Pageable pageable = PageRequest.of(pageNo, pageSize);
-        ProductListResponseDTO products = productService.getAllProductsPaged(pageable);
+        ProductListPagedResponseDTO products = productService.getAllProductsPaged(pageable);
         return ResponseEntity.ok(products);
     }
 
