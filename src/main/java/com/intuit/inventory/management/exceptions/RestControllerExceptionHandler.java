@@ -44,21 +44,21 @@ public class RestControllerExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
     }
 
-    @ExceptionHandler({AddingProductWithoutProductNameOrCategory.class})
+    @ExceptionHandler(AddingProductWithoutProductNameOrCategory.class)
     public ResponseEntity<ErrorMessage> addingProductWithoutProductNameOrCategory(AddingProductWithoutProductNameOrCategory exception) {
         ErrorMessage errorMessage = new ErrorMessage(HttpStatus.BAD_REQUEST, exception.getMessage());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
     }
 
-    @ExceptionHandler({AddingNewVendorWithoutVendorLinkException.class})
+    @ExceptionHandler(AddingNewVendorWithoutVendorLinkException.class)
     public ResponseEntity<ErrorMessage> addingNewVendorWithoutVendorLinkException(AddingNewVendorWithoutVendorLinkException exception) {
         ErrorMessage errorMessage = new ErrorMessage(HttpStatus.BAD_REQUEST, exception.getMessage());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
     }
 
-    @ExceptionHandler({AddingAnExistingProductException.class})
+    @ExceptionHandler(AddingAnExistingProductException.class)
     public ResponseEntity<ErrorMessage> addingAnExistingProductException(AddingAnExistingProductException exception) {
         ErrorMessage errorMessage = new ErrorMessage(HttpStatus.BAD_REQUEST, exception.getMessage());
 
