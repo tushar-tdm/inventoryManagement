@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.intuit.inventory.management.ApplicationTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2024-10-13T04:46:22" hostname="Tushars-MacBook-Pro.local" time="0.539">
+  <properties/>
+  <testcase name="contextLoads()" classname="com.intuit.inventory.management.ApplicationTests" time="0.539"/>
+  <system-out><![CDATA[10:16:11.969 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.intuit.inventory.management.ApplicationTests]: ApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+10:16:12.066 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.intuit.inventory.management.Application for test class com.intuit.inventory.management.ApplicationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::               (v3.2.10)
+
+2024-10-13T10:16:12.441+05:30  INFO 64887 --- [inventory.management] [    Test worker] c.i.i.management.ApplicationTests        : Starting ApplicationTests using Java 17.0.12 with PID 64887 (started by tusharm in /Users/tusharm/Documents/java/inventoryManagement)
+2024-10-13T10:16:12.442+05:30  INFO 64887 --- [inventory.management] [    Test worker] c.i.i.management.ApplicationTests        : The following 1 profile is active: "dev"
+2024-10-13T10:16:13.411+05:30  INFO 64887 --- [inventory.management] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2024-10-13T10:16:13.476+05:30  INFO 64887 --- [inventory.management] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 57 ms. Found 4 JPA repository interfaces.
+2024-10-13T10:16:14.179+05:30  INFO 64887 --- [inventory.management] [    Test worker] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2024-10-13T10:16:14.266+05:30  INFO 64887 --- [inventory.management] [    Test worker] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.10.Final
+2024-10-13T10:16:14.319+05:30  INFO 64887 --- [inventory.management] [    Test worker] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2024-10-13T10:16:14.626+05:30  INFO 64887 --- [inventory.management] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2024-10-13T10:16:14.660+05:30  INFO 64887 --- [inventory.management] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2024-10-13T10:16:14.783+05:30  INFO 64887 --- [inventory.management] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@450d10cb
+2024-10-13T10:16:14.785+05:30  INFO 64887 --- [inventory.management] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2024-10-13T10:16:14.823+05:30  WARN 64887 --- [inventory.management] [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2024-10-13T10:16:15.754+05:30  INFO 64887 --- [inventory.management] [    Test worker] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2024-10-13T10:16:20.731+05:30  INFO 64887 --- [inventory.management] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2024-10-13T10:16:21.071+05:30  INFO 64887 --- [inventory.management] [    Test worker] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2024-10-13T10:16:21.534+05:30  WARN 64887 --- [inventory.management] [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-10-13T10:16:22.658+05:30  INFO 64887 --- [inventory.management] [    Test worker] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 13 endpoint(s) beneath base path '/actuator'
+2024-10-13T10:16:22.756+05:30  INFO 64887 --- [inventory.management] [    Test worker] c.i.i.management.ApplicationTests        : Started ApplicationTests in 10.569 seconds (process running for 11.671)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

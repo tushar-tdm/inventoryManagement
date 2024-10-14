@@ -15,6 +15,7 @@ import com.intuit.inventory.management.repository.ProductRepository;
 import com.intuit.inventory.management.repository.VendorProductDetailsRepository;
 import com.intuit.inventory.management.repository.VendorRepository;
 import com.intuit.inventory.management.strategy.implementation.ProductFetchStrategy;
+import com.intuit.inventory.management.utils.MetricsUtil;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,9 @@ public class ProductService {
     @Autowired
     private VendorRepository vendorRepository;
 
+    @Autowired
+    private MetricsUtil metricsUtil;
+
     @Value("${red.color.code.min}")
     private Integer redColorCodeMin;
 
@@ -62,7 +66,15 @@ public class ProductService {
     private ProductFetchStrategy fetchStrategy;
 
     public ProductListResponseDTO getAllProducts() {
+        // Record the time for metrics
+        long startTime = System.nanoTime();
+
         List<ProductInformationDTO> productInformationDTOList = fetchStrategy.fetchAll();
+
+        // Update the metrics
+        long duration = System.nanoTime() - startTime;
+        metricsUtil.recordTimer(MetricsUtil.CustomTimerMetric.GET_ALL_PRODUCTS, duration);
+        metricsUtil.recordCounter(MetricsUtil.CustomTimerMetric.GET_ALL_PRODUCTS);
 
         return new ProductListResponseDTO(
             redColorCodeMin,
@@ -73,8 +85,15 @@ public class ProductService {
     }
 
     public ProductListPagedResponseDTO getAllProductsPaged(Pageable pageable) {
+        // Record the time for metrics
+        long startTime = System.nanoTime();
+
         List<ProductInformationDTO> productInformationDTOList = fetchStrategy.fetchPaged(pageable);
 
+        // Update the metrics
+        long duration = System.nanoTime() - startTime;
+        metricsUtil.recordTimer(MetricsUtil.CustomTimerMetric.GET_ALL_PRODUCTS_PAGED, duration);
+        metricsUtil.recordCounter(MetricsUtil.CustomTimerMetric.GET_ALL_PRODUCTS_PAGED);
         return new ProductListPagedResponseDTO(
                 redColorCodeMin,
                 yellowColorCodeMin,
@@ -86,6 +105,9 @@ public class ProductService {
 
     @Transactional
     public Product registerProduct(ProductCreateRequestDTO productRequest) throws AddingProductWithoutProductNameOrCategory, AddingNewVendorWithoutVendorLinkException, AddingAnExistingProductException {
+
+        // Record the time for metrics
+        long startTime = System.nanoTime();
 
         // Check if the product by this vendor already exists in the given shelf
         ProductKey productKey = new ProductKey(productRequest.getProductId(), productRequest.getShelfNumber(), productRequest.getVendorId());
@@ -118,12 +140,21 @@ public class ProductService {
         product.setVendorProductDetails(vendorProductDetails);
         product.setProductDetails(productDetails); // Link to ProductDetails
 
+        // Update the metrics
+        long duration = System.nanoTime() - startTime;
+        metricsUtil.recordTimer(MetricsUtil.CustomTimerMetric.SAVE_PRODUCT, duration);
+        metricsUtil.recordCounter(MetricsUtil.CustomTimerMetric.SAVE_PRODUCT);
+
         return productRepository.save(product);
     }
 
     @Transactional
     public void deleteProductByIdShelfNumberAndVendorId(Integer productId, Integer shelfNumber, Integer vendorId)
             throws ProductNotFoundException {
+
+        // Record the time for metrics
+        long startTime = System.nanoTime();
+
         ProductKey productKey = new ProductKey(productId, shelfNumber, vendorId);
         VendorProductKey vendorProductKey = new VendorProductKey(vendorId, productId);
 
@@ -150,7 +181,14 @@ public class ProductService {
                     vendorRepository.deleteById(vendorId);
                 }
             }
+
+            // Update the metrics
+            long duration = System.nanoTime() - startTime;
+            metricsUtil.recordTimer(MetricsUtil.CustomTimerMetric.DELETE_PRODUCT_FROM_SHELF_BY_VENDOR, duration);
+            metricsUtil.recordCounter(MetricsUtil.CustomTimerMetric.DELETE_PRODUCT_FROM_SHELF_BY_VENDOR);
+
         } else {
+            metricsUtil.recordCounter(MetricsUtil.CustomTimerMetric.DELETE_PRODUCT_FROM_SHELF_BY_VENDOR);
             throw new ProductNotFoundException("Product not found with productId: " + productId + " and shelfNumber: " + shelfNumber);
         }
     }
@@ -158,6 +196,9 @@ public class ProductService {
     // Delete the whole product by the product Id
     @Transactional
     public void deleteProduct(Integer productId) {
+        // Record the time for metrics
+        long startTime = System.nanoTime();
+
         productRepository.deleteByProductId(productId);
         productDetailsRepository.deleteById(productId);
         // get all the vendors who were selling this product
@@ -169,10 +210,19 @@ public class ProductService {
         if (!vendorIdsToBeDeleted.isEmpty()) {
             vendorRepository.deleteAllById(vendorIdsToBeDeleted);
         }
+
+        // Update the metrics
+        long duration = System.nanoTime() - startTime;
+        metricsUtil.recordTimer(MetricsUtil.CustomTimerMetric.DELETE_A_PRODUCT, duration);
+        metricsUtil.recordCounter(MetricsUtil.CustomTimerMetric.DELETE_A_PRODUCT);
+
     }
 
     @Transactional
     public Product updateProductQuantity(ProductQuantityUpdateDTO product) throws ProductNotFoundException {
+        // Record the time for metrics
+        long startTime = System.nanoTime();
+
         ProductKey productKey = new ProductKey(product.getProductId(), product.getShelfNumber(), product.getVendorId());
         Optional<Product> optionalProduct = productRepository.findById(productKey);
 
@@ -197,7 +247,14 @@ public class ProductService {
                 .ifPresent(existingProduct::setProductDetails);
 
         // Save and return the updated product
-        return productRepository.save(existingProduct);
+
+        Product savedProduct = productRepository.save(existingProduct);
+        // Update the metrics
+        long duration = System.nanoTime() - startTime;
+        metricsUtil.recordTimer(MetricsUtil.CustomTimerMetric.UPDATE_PRODUCT_QUANTITY, duration);
+        metricsUtil.recordCounter(MetricsUtil.CustomTimerMetric.UPDATE_PRODUCT_QUANTITY);
+
+        return savedProduct;
     }
 
 }
