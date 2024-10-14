@@ -41,7 +41,7 @@ public class VendorController {
     }
 
     @GetMapping("/vendorByLink")
-    public ResponseEntity<Integer> getVendorIdByVendorLink(@RequestParam("vendorLink") String vendorLink) {
+    public ResponseEntity<Integer> getVendorIdByVendorLink(@RequestParam("vendorLink") String vendorLink) throws VendorNotFoundException {
         logger.info("Getting the vendorId by vendor link");
         Integer vendorId = vendorService.getVendorIdByVendorLink(vendorLink);
         return ResponseEntity.ok(vendorId);

@@ -109,33 +109,35 @@ public class ProductService {
         // Record the time for metrics
         long startTime = System.nanoTime();
 
+        // Get productDetails object from the factory
+        ProductDetails productDetails = ProductDetailsFactory.createOrFetchProductDetails(productRequest, productDetailsRepository);
+        // Create/Get the vendor details
+        Vendor vendor = VendorFactory.createOrFetchVendor(productRequest, vendorRepository);
+
         // Check if the product by this vendor already exists in the given shelf
-        ProductKey productKey = new ProductKey(productRequest.getProductId(), productRequest.getShelfNumber(), productRequest.getVendorId());
+        ProductKey productKey = new ProductKey(productDetails.getProductId(), productRequest.getShelfNumber(), vendor.getVendorId());
         if (productRepository.findById(productKey).isPresent()) {
-            throw new AddingAnExistingProductException("This product supplied by vendor" + productRequest.getVendorId() +
+            throw new AddingAnExistingProductException("This product supplied by vendor" + productRequest.getVendorLink() +
                     "is already available at the shelf " + productRequest.getShelfNumber() +
                     ". Please update the quantity instead");
         }
 
-        // Get productDetails object from the factory
-        ProductDetails productDetails = ProductDetailsFactory.createOrFetchProductDetails(productRequest, productDetailsRepository);
-
-        // Create/Get the vendor details
-        Vendor vendor = VendorFactory.createOrFetchVendor(productRequest, vendorRepository);
-        VendorProductKey vendorProductKey = new VendorProductKey(productRequest.getVendorId(), productRequest.getProductId());
+        VendorProductKey vendorProductKey = new VendorProductKey(vendor.getVendorId(), productDetails.getProductId());
 
         VendorProductDetails vendorProductDetails = VendorProductDetailsFactory.createOrFetchVendorProductDetails(
                 vendorProductKey,
                 vendorProductDetailsRepository,
                 productRequest,
+                productDetails.getProductId(),
+                vendor.getVendorId(),
                 vendor
                 );
 
         // Create and save Product
         Product product = new Product();
         product.setShelfNumber(productRequest.getShelfNumber());
-        product.setProductId(productRequest.getProductId());
-        product.setVendorId(productRequest.getVendorId());
+        product.setProductId(productDetails.getProductId());
+        product.setVendorId(vendor.getVendorId());
         product.setQuantity(productRequest.getQuantity());
         product.setVendorProductDetails(vendorProductDetails);
         product.setProductDetails(productDetails); // Link to ProductDetails
@@ -195,9 +197,17 @@ public class ProductService {
 
     // Delete the whole product by the product Id
     @Transactional
-    public void deleteProduct(Integer productId) {
+    public String deleteProduct(Integer productId) throws ProductNotFoundException {
         // Record the time for metrics
         long startTime = System.nanoTime();
+        StringBuilder responseString = new StringBuilder();
+        Optional<ProductDetails> productDetails = productDetailsRepository.findByProductId(productId);
+        if (productDetails.isPresent()) {
+            responseString.append("Product ").append(productDetails.get().getProductName()).append(" was deleted.");
+        } else {
+            System.out.println("Product was not found here");
+            throw new ProductNotFoundException("Product with Id: " + productId + " not found.");
+        }
 
         productRepository.deleteByProductId(productId);
         productDetailsRepository.deleteById(productId);
@@ -209,12 +219,16 @@ public class ProductService {
         vendorProductDetailsRepository.deleteByProductId(productId);
         if (!vendorIdsToBeDeleted.isEmpty()) {
             vendorRepository.deleteAllById(vendorIdsToBeDeleted);
+            responseString.append(" The following vendors will be removed as they were supplying only this product. Vendor Ids: ")
+                    .append(vendorIdsToBeDeleted);
         }
 
         // Update the metrics
         long duration = System.nanoTime() - startTime;
         metricsUtil.recordTimer(MetricsUtil.CustomTimerMetric.DELETE_A_PRODUCT, duration);
         metricsUtil.recordCounter(MetricsUtil.CustomTimerMetric.DELETE_A_PRODUCT);
+
+        return responseString.toString();
 
     }
 

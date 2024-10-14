@@ -10,15 +10,17 @@ import java.util.Optional;
 public class VendorFactory {
     public static Vendor createOrFetchVendor(ProductCreateRequestDTO productRequest, VendorRepository vendorRepository)
             throws AddingNewVendorWithoutVendorLinkException {
-        Optional<Vendor> vendorOptional = vendorRepository.findById(productRequest.getVendorId());
-        if (vendorOptional.isPresent()) {
-            return vendorOptional.get();
+
+        // Check if there's a vendor by the given link
+        Optional<Vendor> existingVendor = vendorRepository.findByVendorLink(productRequest.getVendorLink());
+
+        if (existingVendor.isPresent()) {
+            return existingVendor.get();
         } else {
             if (productRequest.getVendorLink() == null) {
-                throw new AddingNewVendorWithoutVendorLinkException("Vendor link should be provided only while adding a new Vendor");
+                throw new AddingNewVendorWithoutVendorLinkException("Vendor link should be provided while adding a new Vendor");
             } else {
                 Vendor newVendor = new Vendor();
-                newVendor.setVendorId(productRequest.getVendorId());
                 newVendor.setVendorLink(productRequest.getVendorLink());
                 return vendorRepository.save(newVendor);
             }

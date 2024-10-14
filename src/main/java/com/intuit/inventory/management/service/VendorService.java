@@ -7,6 +7,8 @@ import com.intuit.inventory.management.repository.ProductDetailRepository;
 import com.intuit.inventory.management.repository.ProductRepository;
 import com.intuit.inventory.management.repository.VendorProductDetailsRepository;
 import com.intuit.inventory.management.repository.VendorRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,16 +22,18 @@ import java.util.Optional;
 public class VendorService {
 
     @Autowired
-    VendorRepository vendorRepository;
+    private VendorRepository vendorRepository;
 
     @Autowired
-    VendorProductDetailsRepository vendorProductDetailsRepository;
+    private VendorProductDetailsRepository vendorProductDetailsRepository;
 
     @Autowired
-    ProductRepository productRepository;
+    private ProductRepository productRepository;
 
     @Autowired
-    ProductDetailRepository productDetailRepository;
+    private ProductDetailRepository productDetailRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(VendorService.class);
 
     public List<Vendor> getAllVendor() {
         return vendorRepository.findAll();
@@ -76,8 +80,14 @@ public class VendorService {
         return ResponseEntity.status(HttpStatus.OK).body("Successfully delete vendor " + vendorId + " and their products");
     }
 
-    public Integer getVendorIdByVendorLink(String vendorLink) {
-        System.out.println("Vendor Link is: " + vendorLink);
-        return vendorRepository.findVendorIdByVendorLink(vendorLink).getVendorId();
+    public Integer getVendorIdByVendorLink(String vendorLink) throws VendorNotFoundException {
+        logger.info("Vendor Link is: " + vendorLink);
+        Optional<Vendor> vendor = vendorRepository.findByVendorLink(vendorLink);
+        if (vendor.isPresent()) {
+            return vendor.get().getVendorId();
+        } else {
+            throw new VendorNotFoundException("There is no vendor with vendorLink :" + vendorLink);
+        }
+
     }
 }

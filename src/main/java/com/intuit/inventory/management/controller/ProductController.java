@@ -6,7 +6,6 @@ import com.intuit.inventory.management.exceptions.AddingNewVendorWithoutVendorLi
 import com.intuit.inventory.management.exceptions.AddingProductWithoutProductNameOrCategory;
 import com.intuit.inventory.management.exceptions.ProductNotFoundException;
 import com.intuit.inventory.management.models.product.*;
-import com.intuit.inventory.management.service.NotificationService;
 import com.intuit.inventory.management.service.ProductService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -24,9 +23,6 @@ public class ProductController {
 
     @Autowired
     private ProductService productService;
-
-    @Autowired
-    private NotificationService notificationService;
 
     @Value("${page.size}")
     private int pageSize;
@@ -59,8 +55,11 @@ public class ProductController {
      */
 
     @PostMapping(value = "/save",consumes = "application/json")
-    public ResponseEntity<Product> saveProduct(@Valid @RequestBody ProductCreateRequestDTO product) throws AddingAnExistingProductException, AddingNewVendorWithoutVendorLinkException, AddingProductWithoutProductNameOrCategory {
-        logger.info("Adding a product to inventory. Product Id: " + product.getProductId());
+    public ResponseEntity<Product> saveProduct(@Valid @RequestBody ProductCreateRequestDTO product)
+            throws AddingAnExistingProductException,
+            AddingNewVendorWithoutVendorLinkException,
+            AddingProductWithoutProductNameOrCategory {
+        logger.info("Adding a product " + product.getProductName() + "to inventory.");
         Product savedProduct = productService.registerProduct(product);
         return ResponseEntity.ok(savedProduct);
     }
@@ -83,10 +82,10 @@ public class ProductController {
     }
 
     @DeleteMapping(value = "/deleteProduct/{productId}")
-    public ResponseEntity<String> deleteProductById(@PathVariable Integer productId) {
+    public ResponseEntity<String> deleteProductById(@PathVariable Integer productId) throws ProductNotFoundException {
         logger.info("Deleting a product from the inventory. Product Id: " + productId);
-        productService.deleteProduct(productId);
-        return ResponseEntity.ok("Product with productId: " + productId + " deleted successfully");
+        String responseString = productService.deleteProduct(productId);
+        return ResponseEntity.ok(responseString);
     }
 
     /** ****************************************************

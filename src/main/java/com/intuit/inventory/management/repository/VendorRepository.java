@@ -2,7 +2,10 @@ package com.intuit.inventory.management.repository;
 
 import com.intuit.inventory.management.entity.Vendor;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.Optional;
 
 public interface VendorRepository extends JpaRepository<Vendor, Integer> {
-    Vendor findVendorIdByVendorLink(String vendorLink);
+    Optional<Vendor> findByVendorLink(String vendorLink);
 }

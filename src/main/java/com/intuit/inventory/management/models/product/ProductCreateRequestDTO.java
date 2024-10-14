@@ -17,27 +17,29 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductCreateRequestDTO {
-    @NotNull
-    private Integer productId;
+
     @NotNull
     @Min(value = 0)
     private Integer shelfNumber;
-    @NotNull
-    private Integer vendorId;
+
     @NotNull
     @Min(value = 0)
     private Integer quantity;
-    @NotNull
+
+//    @NotNull
     @Min(value = 0)
     private Double price;
-//    @NotNull
+
+    @NotNull
     @NotBlank
     private String vendorLink;
-//    @NotNull
+
+    @NotNull
     @NotBlank
     private String productName;
+
 //    @NotNull
-    @NotBlank
+//    @NotBlank
     private String category;
 
     private Object productDescription;

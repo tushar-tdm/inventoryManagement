@@ -20,23 +20,23 @@ public class ProductDetailsService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ProductDetails getProductDetailByProductId(ProductCreateRequestDTO productRequest) {
-        ProductDetails productDetail= productDetailsRepository.findById(productRequest.getProductId())
-                .orElseGet(() -> {
-                    ProductDetails newProductDetails = new ProductDetails();
-                    newProductDetails.setProductId(productRequest.getProductId());
-                    newProductDetails.setProductName(productRequest.getProductName());
-                    newProductDetails.setCategory(productRequest.getCategory());
-                    try {
-                        String productDescriptionJson = objectMapper.writeValueAsString(productRequest.getProductDescription());
-                        newProductDetails.setProductDescription(productDescriptionJson);
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException("Error converting product description to JSON", e);
-                    }
-                    return productDetailsRepository.save(newProductDetails);
-                });
-        return productDetail;
-    }
+//    public ProductDetails getProductDetailByProductId(ProductCreateRequestDTO productRequest) {
+//        ProductDetails productDetail= productDetailsRepository.findById(productRequest.getProductId())
+//                .orElseGet(() -> {
+//                    ProductDetails newProductDetails = new ProductDetails();
+//                    newProductDetails.setProductId(productRequest.getProductId());
+//                    newProductDetails.setProductName(productRequest.getProductName());
+//                    newProductDetails.setCategory(productRequest.getCategory());
+//                    try {
+//                        String productDescriptionJson = objectMapper.writeValueAsString(productRequest.getProductDescription());
+//                        newProductDetails.setProductDescription(productDescriptionJson);
+//                    } catch (JsonProcessingException e) {
+//                        throw new RuntimeException("Error converting product description to JSON", e);
+//                    }
+//                    return productDetailsRepository.save(newProductDetails);
+//                });
+//        return productDetail;
+//    }
 
     public ProductDetails findById(Integer productId) throws ProductNotFoundException {
         Optional<ProductDetails> productDetails = productDetailsRepository.findById(productId);
