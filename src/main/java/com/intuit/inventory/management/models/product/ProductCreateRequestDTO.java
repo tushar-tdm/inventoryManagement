@@ -7,12 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Data Transfer Object for Product.
- * This will be used to add a new product to inventory.
- */
-
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,7 +20,6 @@ public class ProductCreateRequestDTO {
     @Min(value = 0)
     private Integer quantity;
 
-//    @NotNull
     @Min(value = 0)
     private Double price;
 
@@ -38,8 +31,7 @@ public class ProductCreateRequestDTO {
     @NotBlank
     private String productName;
 
-//    @NotNull
-//    @NotBlank
+    @NotNull
     private String category;
 
     private Object productDescription;

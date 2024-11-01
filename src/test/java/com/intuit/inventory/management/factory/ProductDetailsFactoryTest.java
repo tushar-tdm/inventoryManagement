@@ -2,16 +2,14 @@ package com.intuit.inventory.management.factory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intuit.inventory.management.entity.ProductDetails;
-import com.intuit.inventory.management.exceptions.AddingProductWithoutProductNameOrCategory;
+import com.intuit.inventory.management.exceptions.AddingProductWithoutProductDescriptionOrCategory;
 import com.intuit.inventory.management.models.product.ProductCreateRequestDTO;
 import com.intuit.inventory.management.repository.ProductDetailRepository;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Optional;
@@ -59,36 +57,38 @@ public class ProductDetailsFactoryTest {
     }
 
     @Test
-    public void testCreateOrFetchProductDetails_ExistingProduct_Success() throws Exception {
+    public void testCreateOrFetchProductDetails_ExistingProduct_Failure() throws Exception {
         ProductCreateRequestDTO productRequest = new ProductCreateRequestDTO();
         productRequest.setProductName("Shirt");
+        productRequest.setCategory("Clothes");
 
         ProductDetails existingProductDetails = new ProductDetails();
         existingProductDetails.setProductName("Shirt");
         existingProductDetails.setCategory("Clothes");
 
-        Mockito.when(productDetailRepository.findByProductName(productRequest.getProductName()))
-                .thenReturn(Optional.of(existingProductDetails));
+//        Mockito.when(productDetailRepository.findByProductNameAndCategory(productRequest.getProductName(), productRequest.getCategory()))
+//                .thenReturn(Arrays.asList(existingProductDetails));
 
-
-        ProductDetails result = ProductDetailsFactory.createOrFetchProductDetails(productRequest, productDetailRepository);
+        Assert.assertThrows(AddingProductWithoutProductDescriptionOrCategory.class, () ->
+                ProductDetailsFactory.createOrFetchProductDetails(productRequest, productDetailRepository)
+        );
 
         // Verify
-        Assert.assertNotNull(result);
-        Assert.assertEquals("Shirt", result.getProductName());
-        Assert.assertEquals("Clothes", result.getCategory());
-        Mockito.verify(productDetailRepository, Mockito.never()).save(any(ProductDetails.class));
+//        Assert.assertNotNull(result);
+//        Assert.assertEquals("Shirt", result.getProductName());
+//        Assert.assertEquals("Clothes", result.getCategory());
+//        Mockito.verify(productDetailRepository, Mockito.never()).save(any(ProductDetails.class));
     }
 
     @Test()
     public void testCreateOrFetchProductDetails_NewProductWithoutNameOrCategory_ThrowsException() throws Exception {
         ProductCreateRequestDTO productRequest = new ProductCreateRequestDTO();
-        productRequest.setProductName(null);
+        productRequest.setProductDescription(null);
         productRequest.setCategory(null);
 
         Mockito.when(productDetailRepository.findByProductName(Mockito.anyString())).thenReturn(Optional.empty());
 
-        Assert.assertThrows(AddingProductWithoutProductNameOrCategory.class, () -> {
+        Assert.assertThrows(AddingProductWithoutProductDescriptionOrCategory.class, () -> {
             ProductDetailsFactory.createOrFetchProductDetails(productRequest, productDetailRepository);
         });
 

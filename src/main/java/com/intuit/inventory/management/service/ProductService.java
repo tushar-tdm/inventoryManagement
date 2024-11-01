@@ -1,10 +1,11 @@
 package com.intuit.inventory.management.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intuit.inventory.management.entity.*;
 import com.intuit.inventory.management.exceptions.AddingAnExistingProductException;
 import com.intuit.inventory.management.exceptions.AddingNewVendorWithoutVendorLinkException;
-import com.intuit.inventory.management.exceptions.AddingProductWithoutProductNameOrCategory;
+import com.intuit.inventory.management.exceptions.AddingProductWithoutProductDescriptionOrCategory;
 import com.intuit.inventory.management.exceptions.ProductNotFoundException;
 import com.intuit.inventory.management.factory.ProductDetailsFactory;
 import com.intuit.inventory.management.factory.VendorFactory;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -104,7 +106,7 @@ public class ProductService {
     }
 
     @Transactional
-    public Product registerProduct(ProductCreateRequestDTO productRequest) throws AddingProductWithoutProductNameOrCategory, AddingNewVendorWithoutVendorLinkException, AddingAnExistingProductException {
+    public Product registerProduct(ProductCreateRequestDTO productRequest) throws AddingProductWithoutProductDescriptionOrCategory, AddingNewVendorWithoutVendorLinkException, AddingAnExistingProductException {
 
         // Record the time for metrics
         long startTime = System.nanoTime();
@@ -197,7 +199,7 @@ public class ProductService {
 
     // Delete the whole product by the product Id
     @Transactional
-    public String deleteProduct(Integer productId) throws ProductNotFoundException {
+    public String deleteProductById(Integer productId) throws ProductNotFoundException {
         // Record the time for metrics
         long startTime = System.nanoTime();
         StringBuilder responseString = new StringBuilder();
@@ -205,23 +207,15 @@ public class ProductService {
         if (productDetails.isPresent()) {
             responseString.append("Product ").append(productDetails.get().getProductName()).append(" was deleted.");
         } else {
-            System.out.println("Product was not found here");
             throw new ProductNotFoundException("Product with Id: " + productId + " not found.");
         }
 
         productRepository.deleteByProductId(productId);
         productDetailsRepository.deleteById(productId);
-        // get all the vendors who were selling this product
-        List<Integer> vendors = vendorProductDetailsRepository.findAllByProductId(productId);
-        List<Integer> vendorIdsToBeDeleted = vendors.stream()
-                .filter(vendorId -> vendorProductDetailsRepository.countProductsByVendorId(vendorId) == 1)
-                .collect(Collectors.toList());
-        vendorProductDetailsRepository.deleteByProductId(productId);
-        if (!vendorIdsToBeDeleted.isEmpty()) {
-            vendorRepository.deleteAllById(vendorIdsToBeDeleted);
-            responseString.append(" The following vendors will be removed as they were supplying only this product. Vendor Ids: ")
-                    .append(vendorIdsToBeDeleted);
-        }
+
+        // Common method to delete the vendors related to productId.
+        // Vendors will be deleted if they are selling only this product.
+        responseString.append(deleteVendorRelatedToProduct(productDetails.get().getProductId()));
 
         // Update the metrics
         long duration = System.nanoTime() - startTime;
@@ -231,6 +225,19 @@ public class ProductService {
         return responseString.toString();
 
     }
+
+    @Transactional
+    public String deleteProductByName(String productName) throws ProductNotFoundException {
+        StringBuilder responseString = new StringBuilder();
+        Optional<ProductDetails> productDetails = productDetailsRepository.findByProductName(productName);
+
+        if (productDetails.isPresent()) {
+            return deleteProductById(productDetails.get().getProductId());
+        } else {
+            throw new ProductNotFoundException("Product with name: " + productName + " not found.");
+        }
+    }
+
 
     @Transactional
     public Product updateProductQuantity(ProductQuantityUpdateDTO product) throws ProductNotFoundException {
@@ -271,4 +278,25 @@ public class ProductService {
         return savedProduct;
     }
 
+    public List<Product> getProductsFromFilter(ProductFilterConditionsDTO filters) {
+        ProductSpecification productSpecification = new ProductSpecification();
+        Specification<Product> spec = productSpecification.getProductsByFilter(filters);
+        return productRepository.findAll(spec) ;
+    }
+
+    public String deleteVendorRelatedToProduct(Integer productId) {
+        // get all the vendors who were selling this product
+        StringBuilder responseString = new StringBuilder();
+        List<Integer> vendors = vendorProductDetailsRepository.findAllByProductId(productId);
+        List<Integer> vendorIdsToBeDeleted = vendors.stream()
+                .filter(vendorId -> vendorProductDetailsRepository.countProductsByVendorId(vendorId) == 1)
+                .collect(Collectors.toList());
+        vendorProductDetailsRepository.deleteByProductId(productId);
+        if (!vendorIdsToBeDeleted.isEmpty()) {
+            vendorRepository.deleteAllById(vendorIdsToBeDeleted);
+            responseString.append(" The following vendors will be removed as they were supplying only this product. Vendor Ids: ")
+                    .append(vendorIdsToBeDeleted);
+        }
+        return responseString.toString();
+    }
 }

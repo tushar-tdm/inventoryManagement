@@ -4,53 +4,30 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intuit.inventory.management.entity.*;
 import com.intuit.inventory.management.exceptions.ProductNotFoundException;
 import com.intuit.inventory.management.models.product.ProductCreateRequestDTO;
+import com.intuit.inventory.management.models.product.ProductListPagedResponseDTO;
 import com.intuit.inventory.management.models.product.ProductListResponseDTO;
-import com.intuit.inventory.management.repository.ProductRepository;
+import com.intuit.inventory.management.models.product.ProductQuantityUpdateDTO;
 import com.intuit.inventory.management.service.ProductService;
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@RunWith(SpringRunner.class)
-@TestPropertySource(properties = "page.size=10")
+@WebMvcTest(ProductController.class)
 public class ProductControllerTest {
 
-    MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Mock
+    @MockBean
     private ProductService productService;
-
-    @Mock
-    private ProductRepository productRepository;
-
-    @InjectMocks
-    private ProductController productController;
-
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(productController).build();
-    }
 
     @Test
     public void testSaveProduct() throws Exception {
@@ -115,19 +92,95 @@ public class ProductControllerTest {
 
     @Test
     public void testGetAllProductsPaged() throws Exception {
-        ProductListResponseDTO productListResponseDTO = ProductListResponseDTO.builder()
+        ProductListPagedResponseDTO productListResponseDTO = ProductListPagedResponseDTO.builder()
                 .redMin(0)
                 .yellowMin(20)
                 .greenMin(50)
+                .pageSize(10)
                 .build();
 
-        when(productService.getAllProducts()).thenReturn(productListResponseDTO);
+        when(productService.getAllProductsPaged(any(Pageable.class))).thenReturn(productListResponseDTO);
 
         mockMvc.perform(get("http://localhost:8082/api/product/list/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.redMin").value(0))
                 .andExpect(jsonPath("$.yellowMin").value(20))
                 .andExpect(jsonPath("$.greenMin").value(50));
+    }
+
+    @Test
+    public void testDeleteProductByVendorInShelf() throws Exception {
+        mockMvc.perform(delete("http://localhost:8082/api/product/delete/1/shelf/3/vendor/7"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testDeleteProductByProductId() throws Exception {
+        mockMvc.perform(delete("http://localhost:8082/api/product/deleteProduct/1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testDeleteProductByProductName() throws Exception {
+        mockMvc.perform(delete("http://localhost:8082/api/product/delete/productName/apple"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testDeleteProductByVendorInShelfFailure() throws Exception {
+        // Arrange: Mock the service to throw an exception when called
+        doThrow(new ProductNotFoundException()).when(productService).deleteProductByIdShelfNumberAndVendorId(1, 3, 7);
+
+        // Act and Assert: Perform the request and expect a 404 status with the custom error message
+        mockMvc.perform(delete("/api/product/delete/1/shelf/3/vendor/7"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value("NOT_FOUND"));
+    }
+
+    @Test
+    public void testDeleteProductByProductIdFailure() throws Exception {
+        doThrow(new ProductNotFoundException()).when(productService).deleteProductById(anyInt());
+
+        mockMvc.perform(delete("http://localhost:8082/api/product/deleteProduct/1"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value("NOT_FOUND"));
+    }
+
+    @Test
+    public void testDeleteProductByProductNameFailure() throws Exception {
+        doThrow(new ProductNotFoundException()).when(productService).deleteProductByName(anyString());
+
+        mockMvc.perform(delete("http://localhost:8082/api/product/delete/productName/apple"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value("NOT_FOUND"));
+    }
+
+    @Test
+    public void testUpdateProductQuantity() throws Exception {
+        ProductDetails productDetails = new ProductDetails(1, "Iphone 15 Pro", "Phone", "{\"size\":\"256GB\",\"RAM\":\"8GB\"}");
+        Vendor vendor = new Vendor(7,"/vendor/7");
+        VendorProductDetails vendorProductDetails = new VendorProductDetails(7,1,89999.10,vendor);
+        Product updatedProduct = Product.builder()
+                .productId(1)
+                .shelfNumber(3)
+                .vendorId(7)
+                .quantity(10)
+                .productDetails(productDetails)
+                .vendorProductDetails(vendorProductDetails)
+                .build();
+
+        ProductQuantityUpdateDTO productQuantityUpdateDTO = new ProductQuantityUpdateDTO(1, 3, 7, 35);
+        when(productService.updateProductQuantity(any(productQuantityUpdateDTO.getClass()))).thenReturn(updatedProduct);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(productQuantityUpdateDTO);
+
+        mockMvc.perform(put("http://localhost:8082/api/product/updateQuantity")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody)
+                )
+                .andExpect(status().isOk())
+                .andExpect();
     }
 
     // Helper method to convert object to JSON string

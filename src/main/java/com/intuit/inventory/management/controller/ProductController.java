@@ -3,7 +3,7 @@ package com.intuit.inventory.management.controller;
 import com.intuit.inventory.management.entity.Product;
 import com.intuit.inventory.management.exceptions.AddingAnExistingProductException;
 import com.intuit.inventory.management.exceptions.AddingNewVendorWithoutVendorLinkException;
-import com.intuit.inventory.management.exceptions.AddingProductWithoutProductNameOrCategory;
+import com.intuit.inventory.management.exceptions.AddingProductWithoutProductDescriptionOrCategory;
 import com.intuit.inventory.management.exceptions.ProductNotFoundException;
 import com.intuit.inventory.management.models.product.*;
 import com.intuit.inventory.management.service.ProductService;
@@ -16,6 +16,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/product")
@@ -49,6 +51,13 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
+    @GetMapping(value = "/filtered")
+    public ResponseEntity<List<Product>> getFilteredProducts(@Valid @RequestBody ProductFilterConditionsDTO filters) {
+        logger.info("Getting all of the products based on filter");
+        List<Product> products = productService.getProductsFromFilter(filters);
+        return ResponseEntity.ok(products);
+    }
+
     /** ****************************************************
      * POST CALLS
      * ****************************************************
@@ -58,7 +67,7 @@ public class ProductController {
     public ResponseEntity<Product> saveProduct(@Valid @RequestBody ProductCreateRequestDTO product)
             throws AddingAnExistingProductException,
             AddingNewVendorWithoutVendorLinkException,
-            AddingProductWithoutProductNameOrCategory {
+            AddingProductWithoutProductDescriptionOrCategory {
         logger.info("Adding a product " + product.getProductName() + "to inventory.");
         Product savedProduct = productService.registerProduct(product);
         return ResponseEntity.ok(savedProduct);
@@ -84,7 +93,14 @@ public class ProductController {
     @DeleteMapping(value = "/deleteProduct/{productId}")
     public ResponseEntity<String> deleteProductById(@PathVariable Integer productId) throws ProductNotFoundException {
         logger.info("Deleting a product from the inventory. Product Id: " + productId);
-        String responseString = productService.deleteProduct(productId);
+        String responseString = productService.deleteProductById(productId);
+        return ResponseEntity.ok(responseString);
+    }
+
+    @DeleteMapping(value = "/delete/productName/{productName}")
+    public ResponseEntity<String> deleteProductByName(@PathVariable String productName) throws ProductNotFoundException {
+        logger.info("Deleting a product from the inventory. Product Id: " + productName);
+        String responseString = productService.deleteProductByName(productName);
         return ResponseEntity.ok(responseString);
     }
 
