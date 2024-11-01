@@ -179,8 +179,7 @@ public class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
                 )
-                .andExpect(status().isOk())
-                .andExpect();
+                .andExpect(status().isOk());
     }
 
     // Helper method to convert object to JSON string
